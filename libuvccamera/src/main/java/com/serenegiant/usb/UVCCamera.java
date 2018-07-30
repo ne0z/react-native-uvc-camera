@@ -1089,6 +1089,12 @@ public class UVCCamera {
     		nativeSetCaptureDisplay(mNativePtr, null);
     	}
     }
+
+	public void changePalette(int typeOfPalette) {
+		if (mCtrlBlock != null) {
+			nativeChangePalette(mNativePtr, typeOfPalette);
+		}
+	}
     private static final native void nativeChangePalette(final long id_camera, int typeOfPalette);
     private static final native int nativeSetCaptureDisplay(final long id_camera, final Surface surface);
     private static final native int nativeStopTemp(final long id_camera, final Surface surface);

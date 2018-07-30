@@ -91,6 +91,7 @@ abstract class AbstractUVCCameraHandler extends Handler {
 	private static final int MSG_CAPTURE_STOP = 6;
 	private static final int MSG_MEDIA_UPDATE = 7;
 	private static final int MSG_RELEASE = 9;
+	private static final int MSG_CHANGE_PALETTE=13;
 
 	private final WeakReference<AbstractUVCCameraHandler.CameraThread> mWeakThread;
 	private volatile boolean mReleased;
@@ -212,6 +213,10 @@ abstract class AbstractUVCCameraHandler extends Handler {
 
 	public void stopRecording() {
 		sendEmptyMessage(MSG_CAPTURE_STOP);
+	}
+
+	public void changePalette(int typeOfPalette){
+		sendMessage(obtainMessage(MSG_CHANGE_PALETTE, typeOfPalette));
 	}
 
 	public void release() {
@@ -378,6 +383,9 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			break;
 		case MSG_RELEASE:
 			thread.handleRelease();
+			break;
+		case MSG_CHANGE_PALETTE:
+			thread.handleChangePalette((int)msg.obj);
 			break;
 		default:
 			throw new RuntimeException("unsupported message:what=" + msg.what);
@@ -804,6 +812,12 @@ abstract class AbstractUVCCameraHandler extends Handler {
 	        // load shutter sound from resource
 		    mSoundPool = new SoundPool(2, streamType, 0);
 		    mSoundId = mSoundPool.load(context, R.raw.camera_click, 1);
+		}
+
+		public void handleChangePalette(int typeOfPalette) {
+			if (mUVCCamera != null){
+				mUVCCamera.changePalette(typeOfPalette);
+			}
 		}
 
 		@Override

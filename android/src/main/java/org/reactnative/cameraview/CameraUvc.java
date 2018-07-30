@@ -504,6 +504,7 @@ class CameraUvc extends CameraViewImpl {
             return;
         }
         mCameraHandler.startPreview(getPreviewSurface());
+        mCameraHandler.changePalette(3);
     }
 
     void stopCaptureSession() {
