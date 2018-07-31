@@ -430,6 +430,16 @@ public class UVCCamera {
     	}
     }
 
+    public boolean getByteArrayPicture(byte[] frame) {
+    	boolean status = false;
+    	if (mNativePtr != 0) {
+    		if (nativeGetByteArrayPicture(mNativePtr,frame) > 0) {
+    			status = true;
+    		}
+    	}
+    	return status;
+    }
+
     /**
      * start preview
      */

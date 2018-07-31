@@ -92,6 +92,7 @@ abstract class AbstractUVCCameraHandler extends Handler {
 	private static final int MSG_MEDIA_UPDATE = 7;
 	private static final int MSG_RELEASE = 9;
 	private static final int MSG_CHANGE_PALETTE=13;
+	private static final int MSG_CAPTURE_PALETTE0=14;
 
 	private final WeakReference<AbstractUVCCameraHandler.CameraThread> mWeakThread;
 	private volatile boolean mReleased;
@@ -372,6 +373,9 @@ abstract class AbstractUVCCameraHandler extends Handler {
 		case MSG_CAPTURE_STILL:
 			thread.handleCaptureStill((String)msg.obj);
 			break;
+		case MSG_CAPTURE_PALETTE0:
+			thread.handleCapturePalette0((String)msg.obj);
+			break;
 		case MSG_CAPTURE_START:
 			thread.handleStartRecording();
 			break;
@@ -595,25 +599,44 @@ abstract class AbstractUVCCameraHandler extends Handler {
 			try {
 				final Bitmap bitmap = mWeakCameraView.get().captureStillImage();
 				callOnPictureTaken(bitmap);
-				// // get buffered output stream for saving a captured still image as a file on external storage.
-				// // the file name is came from current time.
-				// // You should use extension name as same as CompressFormat when calling Bitmap#compress.
-				// final File outputFile = TextUtils.isEmpty(path)
-				// 	? MediaMuxerWrapper.getCaptureFile(Environment.DIRECTORY_DCIM, ".png")
-				// 	: new File(path);
-				// final BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(outputFile));
-				// try {
-				// 	try {
-				// 		bitmap.compress(Bitmap.CompressFormat.PNG, 100, os);
-				// 		os.flush();
-				// 		mHandler.sendMessage(mHandler.obtainMessage(MSG_MEDIA_UPDATE, outputFile.getPath()));
-				// 	} catch (final IOException e) {
-				// 	}
-				// } finally {
-				// 	os.close();
-				// }
+
+				mUVCCamera.changePalette(0);
+				mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_CAPTURE_PALETTE0, path), 1000);
 			} catch (final Exception e) {
 				callOnError(e);
+			}
+		}
+
+		public void handleCapturePalette0(final String path) {
+			if (DEBUG) Log.v(TAG_THREAD, "handleCapturePalette0:");
+			Bitmap bitmap = Bitmap.createBitmap(384, 288, Bitmap.Config.ARGB_8888);
+			byte[] byteArray = new byte[384 * 288 * 4];
+			if (mUVCCamera.getByteArrayPicture(byteArray)) {
+				mUVCCamera.changePalette(3);
+				try {
+					// get buffered output stream for saving a captured still image as a file on external storage.
+					// the file name is came from current time.
+					// You should use extension name as same as CompressFormat when calling Bitmap#compress.
+					final File outputFile = TextUtils.isEmpty(path)
+						? MediaMuxerWrapper.getCaptureFile(Environment.DIRECTORY_DCIM, ".png")
+						: new File(path);
+					final BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(outputFile));
+					try {
+						try {
+							bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(byteArray));
+							bitmap.compress(Bitmap.CompressFormat.PNG, 100, os);
+							os.flush();
+							mHandler.sendMessage(mHandler.obtainMessage(MSG_MEDIA_UPDATE, outputFile.getPath()));
+						} catch (final IOException e) {
+						}
+					} finally {
+						os.close();
+					}
+				} catch (final Exception e) {
+					callOnError(e);
+				}
+			} else {
+				mUVCCamera.changePalette(3);
 			}
 		}
 
