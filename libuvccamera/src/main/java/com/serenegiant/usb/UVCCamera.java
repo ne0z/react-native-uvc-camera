@@ -207,7 +207,7 @@ public class UVCCamera {
     		mSupportedSize = nativeGetSupportedSize(mNativePtr);
     	}
 		nativeSetPreviewSize(mNativePtr, DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT,
-			DEFAULT_PREVIEW_MIN_FPS, DEFAULT_PREVIEW_MAX_FPS, DEFAULT_PREVIEW_MODE, DEFAULT_BANDWIDTH);
+			DEFAULT_PREVIEW_MIN_FPS, DEFAULT_PREVIEW_MAX_FPS, DEFAULT_PREVIEW_MODE, DEFAULT_BANDWIDTH, 0);
     }
 
 	/**
@@ -279,7 +279,7 @@ public class UVCCamera {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Set preview size and preview mode
 	 * @param width
@@ -298,7 +298,7 @@ public class UVCCamera {
 	public void setPreviewSize(final int width, final int height, final int frameFormat) {
 		setPreviewSize(width, height, DEFAULT_PREVIEW_MIN_FPS, DEFAULT_PREVIEW_MAX_FPS, frameFormat, mCurrentBandwidthFactor);
 	}
-	
+
 	/**
 	 * Set preview size and preview mode
 	 * @param width
@@ -323,7 +323,7 @@ public class UVCCamera {
 		if ((width == 0) || (height == 0))
 			throw new IllegalArgumentException("invalid preview size");
 		if (mNativePtr != 0) {
-			final int result = nativeSetPreviewSize(mNativePtr, width, height, min_fps, max_fps, frameFormat, bandwidthFactor);
+			final int result = nativeSetPreviewSize(mNativePtr, width, height, min_fps, max_fps, frameFormat, bandwidthFactor, 0);
 			if (result != 0)
 				throw new IllegalArgumentException("Failed to set preview size");
 			mCurrentFrameFormat = frameFormat;
@@ -1057,12 +1057,17 @@ public class UVCCamera {
 	private static final native int nativeSetStatusCallback(final long mNativePtr, final IStatusCallback callback);
 	private static final native int nativeSetButtonCallback(final long mNativePtr, final IButtonCallback callback);
 
-    private static final native int nativeSetPreviewSize(final long id_camera, final int width, final int height, final int min_fps, final int max_fps, final int mode, final float bandwidth);
+    private static final native int nativeSetPreviewSize(final long id_camera, final int width, final int height, final int min_fps, final int max_fps, final int mode, final float bandwidth,int currentAndroidVersion);
     private static final native String nativeGetSupportedSize(final long id_camera);
     private static final native int nativeStartPreview(final long id_camera);
     private static final native int nativeStopPreview(final long id_camera);
     private static final native int nativeSetPreviewDisplay(final long id_camera, final Surface surface);
     private static final native int nativeSetFrameCallback(final long mNativePtr, final IFrameCallback callback, final int pixelFormat);
+    private static final native int nativeGetByteArrayPicture(final long mNativePtr,byte[] frame);
+    private static final native byte[] nativeGetByteArrayTemperaturePara(final long mNativePtr,int len);
+    private static final native int nativeSetTemperatureCallback(final long mNativePtr, final ITemperatureCallback callback);
+    private static final native void nativeWhenShutRefresh(final long mNativePtr);
+    private static final native void nativeWhenChangeTempPara(final long mNativePtr);
 
 //**********************************************************************
     /**
@@ -1084,7 +1089,9 @@ public class UVCCamera {
     		nativeSetCaptureDisplay(mNativePtr, null);
     	}
     }
+    private static final native void nativeChangePalette(final long id_camera, int typeOfPalette);
     private static final native int nativeSetCaptureDisplay(final long id_camera, final Surface surface);
+    private static final native int nativeStopTemp(final long id_camera, final Surface surface);
 
     private static final native long nativeGetCtrlSupports(final long id_camera);
     private static final native long nativeGetProcSupports(final long id_camera);
